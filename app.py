@@ -13,6 +13,12 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def home():
     return "Flask API enabled, upload your images to /upload"
 
+@app.route("/detect", methods=['GET'])
+def detect():
+    # os.system("python detect.py --weights .\weight\pillar.pt --conf 0.2 --source .\uploads\pilar-16-_JPG.rf.ccf46654b9e0c5d20e3d1b50ae9c1847.jpg --project runs/pilar")
+    os.system("python detect.py --weights .\weight\pillar.pt --conf 0.2 --source .\uploads\pilar-4-_JPG.rf.27c2c37bf9eab1626fa8e943c325b0ee.jpg --project runs/pilar --name result --exist-ok")
+    return "Processing is done"
+
 
 @app.route('/upload', methods=['POST', 'GET'])
 def upload_image():

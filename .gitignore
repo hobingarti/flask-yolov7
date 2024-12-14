@@ -1,0 +1,7 @@
+.venv
+.venv10
+__pycache__
+weight
+runs
+uploads
+traced_model.pt
