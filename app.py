@@ -14,7 +14,7 @@ def home():
     return "Flask API enabled, upload your images to /upload"
 
 
-@app.route('/upload', methods=['POST'])
+@app.route('/upload', methods=['POST', 'GET'])
 def upload_image():
     if 'image' not in request.files:
         return jsonify({'error': 'No file part'}), 400
