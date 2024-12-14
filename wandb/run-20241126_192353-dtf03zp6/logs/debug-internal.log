@@ -1,0 +1,17 @@
+{"time":"2024-11-26T19:23:53.229741736Z","level":"INFO","msg":"using version","core version":"0.18.7"}
+{"time":"2024-11-26T19:23:53.230701634Z","level":"INFO","msg":"created symlink","path":"/content/gdrive/MyDrive/yolov7/wandb/run-20241126_192353-dtf03zp6/logs/debug-core.log"}
+{"time":"2024-11-26T19:23:53.340457245Z","level":"INFO","msg":"created new stream","id":"dtf03zp6"}
+{"time":"2024-11-26T19:23:53.340936292Z","level":"INFO","msg":"stream: started","id":"dtf03zp6"}
+{"time":"2024-11-26T19:23:53.340973833Z","level":"INFO","msg":"writer: Do: started","stream_id":"dtf03zp6"}
+{"time":"2024-11-26T19:23:53.34101257Z","level":"INFO","msg":"handler: started","stream_id":"dtf03zp6"}
+{"time":"2024-11-26T19:23:53.341007888Z","level":"INFO","msg":"sender: started","stream_id":"dtf03zp6"}
+{"time":"2024-11-26T19:23:53.932437083Z","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-11-26T19:46:44.448762855Z","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-11-26T19:46:44.449687259Z","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-11-26T19:46:45.416745185Z","level":"INFO","msg":"handler: operation stats","stats":{"operations":[{"desc":"uploading artifact run_dtf03zp6_model","runtime_seconds":1.221731768,"subtasks":[{"desc":"best.pt","runtime_seconds":0.184053564,"progress":"1.0MB/71.4MB"}]},{"desc":"uploading media/images/Results_55_f7ea06cb8827eafe2128.png","runtime_seconds":0.940355841},{"desc":"uploading media/images/Results_55_d87b37c41e6130833342.png","runtime_seconds":0.940340762},{"desc":"uploading media/images/Results_55_45ca735612b12a4e1182.png","runtime_seconds":0.940337721},{"desc":"uploading media/images/Results_55_9f6d1029b52ccd170c87.png","runtime_seconds":0.940334988},{"desc":"uploading media/images/Results_55_69113ab8b616cd885f89.png","runtime_seconds":0.940332487},{"desc":"uploading media/images/Results_55_e604ca94f59367e29d24.png","runtime_seconds":0.940328171},{"desc":"uploading wandb-summary.json","runtime_seconds":0.70176567}],"total_operations":8}}
+{"time":"2024-11-26T19:46:57.204212806Z","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-11-26T19:46:58.46852773Z","level":"INFO","msg":"stream: closing","id":"dtf03zp6"}
+{"time":"2024-11-26T19:46:58.468689781Z","level":"INFO","msg":"handler: closed","stream_id":"dtf03zp6"}
+{"time":"2024-11-26T19:46:58.46874061Z","level":"INFO","msg":"writer: Close: closed","stream_id":"dtf03zp6"}
+{"time":"2024-11-26T19:46:58.468765582Z","level":"INFO","msg":"sender: closed","stream_id":"dtf03zp6"}
+{"time":"2024-11-26T19:46:58.470138567Z","level":"INFO","msg":"stream: closed","id":"dtf03zp6"}

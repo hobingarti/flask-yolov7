@@ -1,0 +1,57 @@
+{
+  "os": "Linux-6.1.85+-x86_64-with-glibc2.35",
+  "python": "3.10.12",
+  "startedAt": "2024-11-26T19:23:53.223099Z",
+  "args": [
+    "--batch",
+    "16",
+    "--cfg",
+    "cfg/training/yolov7.yaml",
+    "--epochs",
+    "55",
+    "--data",
+    "/content/gdrive/MyDrive/yolov7/strukturpilar-2/data.yaml",
+    "--weights",
+    "yolov7.pt",
+    "--device",
+    "0"
+  ],
+  "program": "/content/gdrive/MyDrive/yolov7/train.py",
+  "codePath": "train.py",
+  "git": {
+    "remote": "https://github.com/augmentedstartups/yolov7.git",
+    "commit": "941b94c59e63f3bb14800f53a9601fdb8be2fc58"
+  },
+  "email": "agung.kessawa@gmail.com",
+  "root": "/content/gdrive/MyDrive/yolov7",
+  "host": "913735f27b30",
+  "username": "root",
+  "executable": "/usr/bin/python3",
+  "codePathLocal": "train.py",
+  "cpu_count": 4,
+  "cpu_count_logical": 8,
+  "gpu": "Tesla T4",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "253055008768",
+      "used": "35241385984"
+    }
+  },
+  "memory": {
+    "total": "54754004992"
+  },
+  "cpu": {
+    "count": 4,
+    "countLogical": 8
+  },
+  "gpu_nvidia": [
+    {
+      "name": "Tesla T4",
+      "memoryTotal": "16106127360",
+      "cudaCores": 2560,
+      "architecture": "Turing"
+    }
+  ],
+  "cudaVersion": "12.2"
+}
