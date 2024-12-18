@@ -20,15 +20,19 @@ def detect():
     os.system("python detect.py  --weights ./weight/pillar.pt --conf 0.2  --source ./uploads/pilar-4-_JPG.rf.27c2c37bf9eab1626fa8e943c325b0ee.jpg --project runs/pilar --name result --exist-ok")
     return "Processing is done"
 
+@app.route("/send-value", methods=['POST'])
+def send_value():
+    content = request.form['imageData']
+    return content
+
 @app.route("/send-image", methods=['POST'])
 def send_image():
-    print("Image saved as 'output_image.jpg'")
     content = request.form['imageData']
     fileName = request.form['imageName']
     
     # content = content.replace('\n', '').replace('\r', '')
     image_data = base64.b64decode(content)
-    with open(fileName, "wb") as f:
+    with open('uploads/'+fileName, "wb") as f:
         f.write(image_data)
     
     # g = open(fileName, "w")
