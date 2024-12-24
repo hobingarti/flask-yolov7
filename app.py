@@ -14,6 +14,25 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def home():
     return "Flask API enabled, upload your images to /upload"
 
+@app.route("/upload-detect", methods=['POST'])
+def upload_detect():
+    # proses dirubah dengan upload base64
+    try:
+        content = request.form['imageData']
+        fileName = request.form['imageName']
+        image_data = base64.b64decode(content)
+        filePath = f"{app.config['UPLOAD_FOLDER']}/{fileName}"
+        with open(filePath, "wb") as f:
+            f.write(image_data)
+    except:
+        return jsonify({'error': 'Gagal Membuat File, pastikan imageData dan imageName terisi'}), 400
+    
+    try:
+        os.system(f"python detect.py  --weights ./weight/pillar.pt --conf 0.2  --source ./{filePath} --project runs/pilar --name result --exist-ok")
+        return jsonify({'message': f'File {fileName} berhasil disimpan', 'path': filePath}), 200
+    except:
+        return jsonify({'message': f'Inferensi {fileName} gagal dilakukan', 'path': filePath}), 500
+
 @app.route("/detect", methods=['GET'])
 def detect():
     # os.system("python detect.py --weights .\weight\pillar.pt --conf 0.2 --source .\uploads\pilar-16-_JPG.rf.ccf46654b9e0c5d20e3d1b50ae9c1847.jpg --project runs/pilar")
