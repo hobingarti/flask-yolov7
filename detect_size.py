@@ -77,9 +77,9 @@ def structure_condition(structures):
                 if dmg['name'] == 'spalling':
                     spalling_percent += dmg_percent
             if crack_percent > 0:
-                obj['damage'].append({'crack':crack_percent})
+                obj['damage'].append({'name':'crack', 'size':crack_percent})
             if spalling_percent > 0:
-                obj['damage'].append({'spalling':spalling_percent})
+                obj['damage'].append({'name':'spalling', 'size':spalling_percent})
             
             if(crack_percent == 0 and spalling_percent == 0):
                 obj['condition'] = 'Baik'
@@ -309,6 +309,14 @@ def detect_size(
             is_inter, size = intersected(pillco['co'], obj)
             if(is_inter):
                 pillco['inside'].append({'name':'crack', 'size':size})
+                
+    # kez, memasukkan object lain ke dalam pillar
+    for obj in objects_co['spalling']['co']:
+        for pillco in pillars_co:
+            # comparing if obj inside pillco
+            is_inter, size = intersected(pillco['co'], obj)
+            if(is_inter):
+                pillco['inside'].append({'name':'spalling', 'size':size})
     
     if save_txt or save_img:
         s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
