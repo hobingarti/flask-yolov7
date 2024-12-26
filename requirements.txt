@@ -40,3 +40,4 @@ thop  # FLOPs computation
 
 # web api -------------------------------------
 flask
+waitress
