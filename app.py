@@ -1,6 +1,7 @@
 import os
 import base64
 from flask import Flask, request, jsonify
+from detect_size import detect_size, intersected
 
 app = Flask(__name__)
 
@@ -28,8 +29,17 @@ def upload_detect():
         return jsonify({'error': 'Gagal Membuat File, pastikan imageData dan imageName terisi'}), 400
     
     try:
-        os.system(f"python detect_size.py  --weights ./weight/pillar.pt --conf 0.2  --source ./{filePath} --project runs/pilar --name result --exist-ok")
-        return jsonify({'message': f'File {fileName} berhasil disimpan', 'path': filePath}), 200
+        # os.system(f"python detect_size.py  --weights ./weight/pillar.pt --conf 0.2  --source ./{filePath} --project runs/pilar --name result --exist-ok")
+        res = detect_size(weights='./weight/pillar.pt', source=f'./{filePath}', conf_thres=0.25, project='runs/pilar', name='result', exist_ok=True )
+        
+        # reading result file
+        resultImage = ''
+        targetFilePath = f'runs/pilar/result/{fileName}'
+        with open(targetFilePath, 'rb') as f:
+            resultImage = base64.b64encode(f.read())
+            
+        resultImage = resultImage.decode('ascii')
+        return jsonify({'message': f'File {fileName} berhasil disimpan', 'path': filePath, 'res': res, 'imageb64': resultImage}), 200
     except:
         return jsonify({'message': f'Inferensi {fileName} gagal dilakukan', 'path': filePath}), 500
 

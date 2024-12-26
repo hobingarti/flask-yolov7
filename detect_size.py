@@ -14,20 +14,124 @@ from utils.general import check_img_size, check_requirements, check_imshow, non_
 from utils.plots import plot_one_box
 from utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
 
+def intersected(xyxy1, xyxy2):
+    put_inside = False
+    inter_area = 0
+    
+    # xyxy1 sebagai object structure, xyxy2 sebagai object damage
+    # case jika di dalam
+    if(xyxy1[0] <= xyxy2[0] and xyxy1[1] <= xyxy2[1] and xyxy1[2] >= xyxy2[2] and xyxy1[3] >= xyxy2[3]):
+        put_inside = True
+    
+    # note
+    # 0 => x min
+    # 1 => y min
+    # 2 => x max
+    # 3 => y max
+    # case jika berisisan (x2 y2 min)
+    if(xyxy1[0] <= xyxy2[0] and xyxy2[0] <= xyxy1[2] and xyxy1[1] <= xyxy2[1] and xyxy2[1] <= xyxy1[3]):
+        put_inside = True
+    # case jika beririsan (x2 y2 max)
+    if(xyxy1[0] <= xyxy2[2] and xyxy2[2] <= xyxy1[2] and xyxy1[1] <= xyxy2[3] and xyxy2[3] <= xyxy1[3]):
+        put_inside = True
+    # case jika beririsan (x2 min y2 max)
+    if(xyxy1[0] <= xyxy2[0] and xyxy2[0] <= xyxy1[2] and xyxy1[1] <= xyxy2[3] and xyxy2[3] <= xyxy1[3]):
+        put_inside = True
+    # case jika beririsan (x2 max y2 min)
+    if(xyxy1[0] <= xyxy2[2] and xyxy2[2] <= xyxy1[2] and xyxy1[1] <= xyxy2[1] and xyxy2[1] <= xyxy1[3]):
+        put_inside = True
+        
+    if(put_inside):
+        xA = int(max(xyxy1[0], xyxy2[0]))
+        yA = int(max(xyxy1[1], xyxy2[1]))
+        xB = int(min(xyxy1[2], xyxy2[2]))
+        yB = int(min(xyxy1[3], xyxy2[3]))
+        
+        # compute intersected area
+        inter_area = abs(xB - xA) * abs(yB - yA)
+    return put_inside, inter_area
 
-def detect_size(save_img=False):
-    source, weights, view_img, save_txt, imgsz, trace = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, not opt.no_trace
-    save_img = not opt.nosave and not source.endswith('.txt')  # save inference images
+def structure_condition(structures):
+    print('we are in structures')
+    key = 0
+    for obj in structures:
+        key += 1 
+        print(obj['co'])
+        new_co = []
+        for co in obj['co']:
+            new_co.append(int(co))
+        print(new_co)
+        # remove co
+        obj['co'] = f'struktur{key}'
+        obj['co'] = new_co
+        # translating coordinates
+        
+        print('damage :', len(obj['inside']))
+        if len(obj['inside']) > 0:
+            crack_percent = 0
+            spalling_percent = 0
+            for dmg in obj['inside']:
+                dmg_percent = dmg['size']/obj['size']*100
+                if dmg['name'] == 'crack':
+                    crack_percent += dmg_percent
+                if dmg['name'] == 'spalling':
+                    spalling_percent += dmg_percent
+            if crack_percent > 0:
+                obj['damage'].append({'crack':crack_percent})
+            if spalling_percent > 0:
+                obj['damage'].append({'spalling':spalling_percent})
+            
+            if(crack_percent == 0 and spalling_percent == 0):
+                obj['condition'] = 'Baik'
+            elif(crack_percent < 25 or spalling_percent < 25):
+                obj['condition'] = 'Rusak Ringan'
+            elif(crack_percent < 50 or spalling_percent < 50):
+                obj['condition'] = 'Rusak Sedang'
+            else:
+                obj['condition'] = 'Rusak Berat'
+            
+            # obj['condition'] = 'Rusak Berat'
+                
+    return structures
+            
+
+# def detect_size(save_img=False):
+def detect_size(
+        weights=None,
+        source='inference/images',
+        img_size=640,
+        conf_thres=0.25,
+        iou_thres=0.45,
+        device='',
+        view_img=False,
+        save_txt=False,
+        save_conf=False,
+        nosave=False,
+        classes=None,
+        agnostic_nms=False,
+        augment=False,
+        update=False,
+        project='runs/detect',
+        name='result',
+        exist_ok=False,
+        no_trace=False
+    ):
+    # source, weights, view_img, save_txt, imgsz, trace = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, not opt.no_trace
+    imgsz, trace = img_size, not no_trace
+    # save_img = not opt.nosave and not source.endswith('.txt')  # save inference images
+    save_img = not nosave and not source.endswith('.txt')  # save inference images
     webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
         ('rtsp://', 'rtmp://', 'http://', 'https://'))
 
     # Directories
-    save_dir = Path(increment_path(Path(opt.project) / opt.name, exist_ok=opt.exist_ok))  # increment run
+    # save_dir = Path(increment_path(Path(opt.project) / opt.name, exist_ok=opt.exist_ok))  # increment run
+    save_dir = Path(increment_path(Path(project) / name, exist_ok=exist_ok))  # increment run
     (save_dir / 'labels' if save_txt else save_dir).mkdir(parents=True, exist_ok=True)  # make dir
 
     # Initialize
     set_logging()
-    device = select_device(opt.device)
+    # device = select_device(opt.device)
+    device = select_device(device)
     half = device.type != 'cpu'  # half precision only supported on CUDA
 
     # Load model
@@ -36,7 +140,8 @@ def detect_size(save_img=False):
     imgsz = check_img_size(imgsz, s=stride)  # check img_size
 
     if trace:
-        model = TracedModel(model, device, opt.img_size)
+        # model = TracedModel(model, device, opt.img_size)
+        model = TracedModel(model, device, img_size)
 
     if half:
         model.half()  # to FP16
@@ -60,12 +165,12 @@ def detect_size(save_img=False):
     names = model.module.names if hasattr(model, 'module') else model.names
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in names]
     
+    # persiapan untuk menambahkan object dan struktur
     pillars_co = []
     objects_co = {}
     for name in names:
         objects_co[name] = {'name':name, 'co':[]}
         # objects_co.append({'name':name, 'co':[]})
-    
     
     # classes_to_filter = ['pillar']
     # opt_classes = None
@@ -74,23 +179,20 @@ def detect_size(save_img=False):
     #     for class_name in classes_to_filter:
     #         opt_classes.append(names.index(class_name))
             
-    print(10*'-')
-    print('check out the names')
-    print(names)
-    print(10*'-')
-    print('check out the colors')
-    print(colors)
-    print(10*'-')
+    # print(10*'-')
+    # print('check out the names')
+    # print(names)
+    # print(10*'-')
+    # print('check out the colors')
+    # print(colors)
+    # print(10*'-')
     # print('check out the opt_classes')
     # print(opt_classes)
     # print(10*'-')
-    print('check out the objects_co')
-    print(objects_co)
-    print(10*'-')
+    # print('check out the objects_co')
+    # print(objects_co)
+    # print(10*'-')
     
-    
-    
-
     # Run inference
     if device.type != 'cpu':
         model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))  # run once
@@ -111,15 +213,18 @@ def detect_size(save_img=False):
             old_img_h = img.shape[2]
             old_img_w = img.shape[3]
             for i in range(3):
-                model(img, augment=opt.augment)[0]
+                # model(img, augment=opt.augment)[0]
+                model(img, augment=augment)[0]
 
         # Inference
         t1 = time_synchronized()
-        pred = model(img, augment=opt.augment)[0]
+        # pred = model(img, augment=opt.augment)[0]
+        pred = model(img, augment=augment)[0]
         t2 = time_synchronized()
 
         # Apply NMS
-        pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
+        pred = non_max_suppression(pred, conf_thres, iou_thres, classes=classes, agnostic=agnostic_nms)
+        # pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
         # pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt_classes, agnostic=opt.agnostic_nms)
         t3 = time_synchronized()
 
@@ -149,24 +254,14 @@ def detect_size(save_img=False):
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
-                    xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
-                    pillars_co.append( {'co':xywh, 'inside':[]} )
-                    # c = xywh
-                    # c[2] = c[0]+c[2]
-                    # c[3] = c[1]+c[3]
-                    print("the coordinates")
-                    print(xyxy)
-                    print(xywh)
-                    print(cls)
-                    print(names[int(cls)])
-                    print(conf)
-                    objects_co[names[int(cls)]]['co'].append(xywh)
-                    print(10*'-')
+                    # memasukkan semua hasil deteksi kedalam koordinat
+                    objects_co[names[int(cls)]]['co'].append(xyxy)
                     
                     
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
-                        line = (cls, *xywh, conf) if opt.save_conf else (cls, *xywh)  # label format
+                        # line = (cls, *xywh, conf) if opt.save_conf else (cls, *xywh)  # label format
+                        line = (cls, *xywh, conf) if save_conf else (cls, *xywh)  # label format
                         with open(txt_path + '.txt', 'a') as f:
                             f.write(('%g ' * len(line)).rstrip() % line + '\n')
 
@@ -201,22 +296,28 @@ def detect_size(save_img=False):
                             save_path += '.mp4'
                         vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
                     vid_writer.write(im0)
-    
-    print('all pillars')
-    print(pillars_co)
-    print(10*'-')
-    for key in objects_co:
-        print(key)
-        print(objects_co[key])
         
-    # memasukkan coordinat pillar
-    # for key in objects_co:
-
+    # kez, memasukkan coordinat pillar
+    for obj in objects_co['pillar']['co']:
+        box_size = abs(int(obj[2]) - int(obj[0])) * abs(int(obj[3]) - int(obj[1]))
+        pillars_co.append( {'co':obj, 'size': box_size, 'inside':[], 'condition':'Baik', 'damage':[]} )
+        
+    # kez, memasukkan object lain ke dalam pillar
+    for obj in objects_co['crack']['co']:
+        for pillco in pillars_co:
+            # comparing if obj inside pillco
+            is_inter, size = intersected(pillco['co'], obj)
+            if(is_inter):
+                pillco['inside'].append({'name':'crack', 'size':size})
+    
     if save_txt or save_img:
         s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
         #print(f"Results saved to {save_dir}{s}")
 
     print(f'Done. ({time.time() - t0:.3f}s)')
+    
+    pillars_co = structure_condition(pillars_co)
+    return pillars_co
 
 
 if __name__ == '__main__':
