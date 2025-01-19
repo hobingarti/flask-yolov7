@@ -1,0 +1,7 @@
+buatlah folder berikut, dan diisi dengan file yang sesuai
+
+./weight/pillar.pt
+./uploads
+./runs/detect
+./runs/pilar/exp
+./runs/pilar/result
