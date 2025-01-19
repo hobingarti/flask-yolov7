@@ -5,3 +5,6 @@ buatlah folder berikut, dan diisi dengan file yang sesuai
 ./runs/detect
 ./runs/pilar/exp
 ./runs/pilar/result
+
+untuk pillar.pt bisa diunduh disini
+https://drive.google.com/file/d/1xyUc47A_D2VX2sl1lONQ5oTgayWJNtlJ/view?usp=sharing
